@@ -1,9 +1,8 @@
 """
-AI-Powered Water Conservation Assistant
-Using Retrieval-Augmented Generation (RAG)
+AI-Powered Water Conservation Assistant (Improved RAG Version)
 
-SDG Alignment: SDG 6 - Clean Water and Sanitation
-This is a conceptual RAG implementation for educational purposes.
+This version produces different answers based on user intent
+and demonstrates smarter AI behavior.
 """
 
 # --------------------------------------------------
@@ -11,108 +10,144 @@ This is a conceptual RAG implementation for educational purposes.
 # --------------------------------------------------
 
 def load_knowledge_base(file_path="data.txt"):
-    """
-    Loads the knowledge base from a text file.
-    """
     try:
         with open(file_path, "r") as file:
-            data = file.read()
-        return data
+            return file.read()
     except FileNotFoundError:
         return ""
 
 
 # --------------------------------------------------
-# STEP 2: RETRIEVAL FUNCTION (RAG COMPONENT)
+# STEP 2: DETECT QUESTION INTENT
 # --------------------------------------------------
 
-def retrieve_relevant_content(query, documents):
-    """
-    Retrieves relevant lines from the knowledge base
-    based on keyword matching.
-    """
-    query_words = query.lower().split()
-    retrieved_lines = []
+def detect_intent(query):
+    query = query.lower()
 
-    for line in documents.split("\n"):
-        line_lower = line.lower()
-        if any(word in line_lower for word in query_words):
-            retrieved_lines.append(line)
+    if any(word in query for word in ["save", "reduce", "conserve", "home"]):
+        return "saving_tips"
 
-    return "\n".join(retrieved_lines)
+    if any(word in query for word in ["why", "importance", "important"]):
+        return "importance"
+
+    if any(word in query for word in ["student", "school", "college"]):
+        return "students"
+
+    if any(word in query for word in ["community", "society", "city"]):
+        return "community"
+
+    if "sdg" in query:
+        return "sdg"
+
+    return "unknown"
 
 
 # --------------------------------------------------
-# STEP 3: RESPONSE GENERATION (SIMULATED LLM)
+# STEP 3: RETRIEVE CONTENT BASED ON INTENT
+# --------------------------------------------------
+
+def retrieve_by_intent(intent, knowledge_base):
+    sections = knowledge_base.split("\n\n")
+
+    if intent == "saving_tips":
+        return sections[0]
+
+    if intent == "students":
+        return sections[1]
+
+    if intent == "community":
+        return sections[2]
+
+    if intent == "sdg":
+        return sections[3]
+
+    if intent == "importance":
+        return sections[0] + "\n" + sections[3]
+
+    return ""
+
+
+# --------------------------------------------------
+# STEP 4: GENERATE CONTEXTUAL RESPONSE
 # --------------------------------------------------
 
 def generate_response(query, knowledge_base):
-    """
-    Generates a response using retrieved information.
-    Demonstrates responsible AI behavior.
-    """
-    retrieved_content = retrieve_relevant_content(query, knowledge_base)
+    intent = detect_intent(query)
+    retrieved_content = retrieve_by_intent(intent, knowledge_base)
 
     if retrieved_content.strip() == "":
         return (
             "I’m sorry, I don’t have enough verified information to answer that accurately.\n"
-            "Please refer to official government or environmental sources for precise details."
+            "Please refer to official environmental or government sources."
         )
 
-    response = (
-        "Based on verified information:\n\n"
-        f"{retrieved_content}\n\n"
-        "This information highlights the importance of responsible water usage "
-        "and supports sustainable living practices."
-    )
+    response_templates = {
+        "saving_tips": (
+            "Here are some practical ways to save water:\n\n"
+            "{}\n\n"
+            "These actions can significantly reduce daily water wastage."
+        ),
+        "importance": (
+            "Water conservation is important because:\n\n"
+            "{}\n\n"
+            "Responsible usage helps protect ecosystems and future generations."
+        ),
+        "students": (
+            "Students can play an important role in water conservation:\n\n"
+            "{}\n\n"
+            "Small actions by students can create large collective impact."
+        ),
+        "community": (
+            "Communities contribute to water conservation through:\n\n"
+            "{}\n\n"
+            "Community involvement ensures sustainable water management."
+        ),
+        "sdg": (
+            "Water conservation is directly aligned with:\n\n"
+            "{}\n\n"
+            "This supports global sustainability goals."
+        )
+    }
 
-    return response
+    return response_templates[intent].format(retrieved_content)
 
 
 # --------------------------------------------------
-# STEP 4: SAMPLE QUESTIONS FOR DEMO
+# STEP 5: SAMPLE QUESTIONS
 # --------------------------------------------------
 
 def show_sample_questions():
-    """
-    Displays example questions for users.
-    """
-    print("\nSample questions you can ask:")
-    print("1. How can I save water at home?")
-    print("2. Why is water conservation important?")
-    print("3. How can students contribute to water conservation?")
-    print("4. What role do communities play in water conservation?")
-    print("5. Which SDG is related to water conservation?")
-    print("6. What is the water usage limit in my city?")
+    print("\nExample questions you can ask:")
+    print("- How can I save water at home?")
+    print("- Why is water conservation important?")
+    print("- How can students contribute to water conservation?")
+    print("- What role do communities play in water conservation?")
+    print("- Which SDG is related to water conservation?")
 
 
 # --------------------------------------------------
-# STEP 5: MAIN CHAT LOOP
+# STEP 6: MAIN CHAT LOOP
 # --------------------------------------------------
 
 def start_chat():
-    """
-    Main function to interact with the user.
-    """
     knowledge_base = load_knowledge_base()
 
-    if knowledge_base == "":
-        print("Knowledge base not found. Please upload data.txt file.")
+    if not knowledge_base:
+        print("Knowledge base not found. Please upload data.txt")
         return
 
     print("=" * 60)
     print("AI-Powered Water Conservation Assistant")
-    print("Aligned with SDG 6: Clean Water and Sanitation")
+    print("Smarter RAG-based Responses")
     print("=" * 60)
 
     show_sample_questions()
 
     while True:
-        print("\nType 'exit' to quit.")
-        user_query = input("\nAsk your question: ").strip()
+        user_query = input("\nAsk a question (type 'exit' to quit): ")
 
         if user_query.lower() == "exit":
-            print("\nThank you for promoting sustainable water usage!")
+            print("Thank you for supporting sustainable water usage!")
             break
 
         response = generate_response(user_query, knowledge_base)
@@ -122,7 +157,7 @@ def start_chat():
 
 
 # --------------------------------------------------
-# STEP 6: PROGRAM ENTRY POINT
+# PROGRAM ENTRY
 # --------------------------------------------------
 
 if __name__ == "__main__":

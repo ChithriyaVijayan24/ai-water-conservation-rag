@@ -97,7 +97,7 @@ def generate_response(query, knowledge_base):
             "{}\n\n"
             "Small actions by students can create large collective impact."
         ),
-        "community": (
+        "communities": (
             "Communities contribute to water conservation through:\n\n"
             "{}\n\n"
             "Community involvement ensures sustainable water management."
@@ -162,3 +162,4 @@ def start_chat():
 
 if __name__ == "__main__":
     start_chat()
+
